@@ -15,6 +15,10 @@ class GetEmpresaDetalleService
 {
     public function execute(string $empresaId): JsonResponse
     {
+        if (! preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i', $empresaId)) {
+            return ApiResponse::error('Empresa no encontrada', [], 404);
+        }
+
         if (DB::getDriverName() === 'pgsql') {
             DB::statement("SET LOCAL app.empresa_id = ''");
         }
