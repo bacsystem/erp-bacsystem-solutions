@@ -41,7 +41,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->statefulApi();
 
-        $middleware->validateCsrfTokens(except: ['api/*']);
+        $middleware->validateCsrfTokens(except: ['api/*', 'superadmin/api/*']);
 
         // has_session: read client-side by Next.js middleware (no encryption needed)
         // refresh_token: Sanctum PAT is cryptographically random, no double-encryption needed

@@ -20,6 +20,24 @@ use App\Modules\Core\Usuario\ActualizarRol\ActualizarRolController;
 use App\Modules\Core\Usuario\DesactivarUsuario\DesactivarUsuarioController;
 use App\Modules\Core\Usuario\InviteUsuario\InviteUsuarioController;
 use App\Modules\Core\Usuario\ListarUsuarios\ListarUsuariosController;
+use App\Modules\Core\Categoria\Crear\CrearCategoriaController;
+use App\Modules\Core\Categoria\Listar\ListarCategoriasController;
+use App\Modules\Core\Categoria\Actualizar\ActualizarCategoriaController;
+use App\Modules\Core\Categoria\Eliminar\EliminarCategoriaController;
+use App\Modules\Core\Producto\Crear\CrearProductoController;
+use App\Modules\Core\Producto\Listar\ListarProductosController;
+use App\Modules\Core\Producto\GetDetalle\GetProductoDetalleController;
+use App\Modules\Core\Producto\Actualizar\ActualizarProductoController;
+use App\Modules\Core\Producto\Desactivar\DesactivarProductoController;
+use App\Modules\Core\Producto\SubirImagen\SubirImagenController;
+use App\Modules\Core\Producto\EliminarImagen\EliminarImagenController;
+use App\Modules\Core\Producto\ImportarCSV\ImportarProductosController;
+use App\Modules\Core\Producto\ExportarExcel\ExportarExcelController;
+use App\Modules\Core\Producto\ExportarPDF\ExportarPDFController;
+use App\Modules\Core\Producto\PrecioLista\ActualizarPrecioListaController;
+use App\Modules\Core\Producto\Promocion\CrearPromocion\CrearPromocionController;
+use App\Modules\Core\Producto\Promocion\DesactivarPromocion\DesactivarPromocionController;
+use App\Modules\Core\Producto\GetQR\GetQRController;
 use Illuminate\Support\Facades\Route;
 
 // ─────────────────────────────────────────────────────────────────
@@ -75,6 +93,38 @@ Route::middleware(['auth:sanctum', 'tenant'])->group(function () {
             ->middleware('role:owner,admin');
         Route::put('usuarios/{usuario}/desactivar', DesactivarUsuarioController::class)
             ->middleware('role:owner,admin');
+    });
+
+    // ─── Categorías ───────────────────────────────────────────────
+    Route::get('categorias', ListarCategoriasController::class);
+    Route::middleware('role:owner,admin')->group(function () {
+        Route::post('categorias', CrearCategoriaController::class);
+        Route::put('categorias/{categoria}', ActualizarCategoriaController::class);
+        Route::delete('categorias/{categoria}', EliminarCategoriaController::class);
+    });
+
+    // ─── Productos — lectura ───────────────────────────────────────
+    Route::get('productos/exportar/pdf', ExportarPDFController::class);
+    Route::get('productos/exportar', ExportarExcelController::class);
+    Route::get('productos/importar/template', [ImportarProductosController::class, 'template']);
+    Route::get('productos/{producto}/qr', GetQRController::class);
+    Route::get('productos/{producto}', GetProductoDetalleController::class);
+    Route::get('productos', ListarProductosController::class);
+
+    // ─── Productos — escritura ─────────────────────────────────────
+    Route::middleware('role:owner,admin')->group(function () {
+        Route::post('productos', CrearProductoController::class)
+            ->middleware('suscripcion.activa');
+        Route::put('productos/{producto}', ActualizarProductoController::class)
+            ->middleware('suscripcion.activa');
+        Route::delete('productos/{producto}', DesactivarProductoController::class)
+            ->middleware('suscripcion.activa');
+        Route::post('productos/{producto}/imagenes', SubirImagenController::class);
+        Route::delete('productos/{producto}/imagenes/{imagen}', EliminarImagenController::class);
+        Route::post('productos/importar', ImportarProductosController::class);
+        Route::put('productos/{producto}/precios-lista', ActualizarPrecioListaController::class);
+        Route::post('productos/{producto}/promociones', CrearPromocionController::class);
+        Route::delete('productos/{producto}/promociones/{promocion}', DesactivarPromocionController::class);
     });
 
     // Suscripción — solo owner

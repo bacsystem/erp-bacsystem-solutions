@@ -5,7 +5,8 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useRouter } from 'next/navigation'
-import { superadminApi, getSuperadminApiError } from './superadmin.api'
+import axios from 'axios'
+import { superadminApi } from './superadmin.api'
 import { useSuperadminAuthStore } from './superadmin-auth.store'
 
 const schema = z.object({
@@ -35,11 +36,17 @@ export default function SuperadminLoginForm() {
       setSuperadmin(superadmin)
       router.push('/superadmin/dashboard')
     } catch (err) {
-      const msg = getSuperadminApiError(err)
-      if (msg.includes('429') || msg.includes('Too Many')) {
-        setError('Demasiados intentos. Espera 15 minutos.')
+      if (axios.isAxiosError(err)) {
+        const status = err.response?.status
+        if (status === 429) {
+          setError('Demasiados intentos. Espera unos minutos.')
+        } else if (status === 401) {
+          setError('Credenciales incorrectas.')
+        } else {
+          setError(`Error inesperado (${status ?? 'sin respuesta'}): ${err.message}`)
+        }
       } else {
-        setError('Credenciales incorrectas.')
+        setError('No se pudo conectar con el servidor.')
       }
     }
   }

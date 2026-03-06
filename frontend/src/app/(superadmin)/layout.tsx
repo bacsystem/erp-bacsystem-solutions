@@ -8,17 +8,20 @@ import { useSuperadminAuthStore } from '@/modules/superadmin/auth/superadmin-aut
 export default function SuperadminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const router = useRouter()
-  const { accessToken } = useSuperadminAuthStore()
+  const { accessToken, _hasHydrated } = useSuperadminAuthStore()
   const isLoginPage = pathname === '/superadmin/login'
 
   useEffect(() => {
+    if (!_hasHydrated) return
     if (!isLoginPage && !accessToken) {
       router.push('/superadmin/login')
     }
     if (isLoginPage && accessToken) {
       router.push('/superadmin/dashboard')
     }
-  }, [accessToken, isLoginPage, router])
+  }, [accessToken, isLoginPage, router, _hasHydrated])
+
+  if (!_hasHydrated) return null
 
   if (isLoginPage) {
     return <>{children}</>

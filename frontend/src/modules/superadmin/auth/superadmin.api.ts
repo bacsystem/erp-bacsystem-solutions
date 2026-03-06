@@ -13,6 +13,19 @@ superadminApi.interceptors.request.use((config) => {
   return config
 })
 
+superadminApi.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      useSuperadminAuthStore.getState().logout()
+      if (typeof window !== 'undefined') {
+        window.location.href = '/superadmin/login'
+      }
+    }
+    return Promise.reject(error)
+  },
+)
+
 export function getSuperadminApiError(error: unknown): string {
   if (axios.isAxiosError(error)) {
     return error.response?.data?.message ?? 'Ocurrió un error inesperado'
