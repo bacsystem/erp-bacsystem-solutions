@@ -1,0 +1,15 @@
+<?php
+
+namespace App\Modules\Core\Auth\RecuperarPassword;
+
+use Illuminate\Foundation\Http\FormRequest;
+
+class RecuperarPasswordRequest extends FormRequest
+{
+    public function authorize(): bool { return true; }
+
+    public function rules(): array
+    {
+        return ['email' => 'required|email'];
+    }
+}
