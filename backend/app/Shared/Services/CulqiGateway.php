@@ -11,7 +11,7 @@ class CulqiGateway implements PaymentGateway
 
     public function __construct()
     {
-        $this->apiKey = config('services.culqi.api_key', '');
+        $this->apiKey = config('services.culqi.api_key') ?? '';
     }
 
     public function charge(array $payload): array
