@@ -10,13 +10,10 @@ import type { UserPayload } from '@/shared/types'
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter()
   const { accessToken, setAccessToken, setUser } = useAuthStore()
-  const [ready, setReady] = useState(false)
+  const [ready, setReady] = useState(!!accessToken)
 
   useEffect(() => {
-    if (accessToken) {
-      setReady(true)
-      return
-    }
+    if (accessToken) return
 
     // Refrescar token con la cookie refresh_token
     axios

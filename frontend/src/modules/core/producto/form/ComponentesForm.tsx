@@ -1,9 +1,9 @@
 'use client'
 
 import { useState } from 'react'
-import { Plus, Search, Trash2 } from 'lucide-react'
+import { Search, Trash2 } from 'lucide-react'
 import { useProductos } from '../listar-productos/use-productos'
-import type { ProductoComponente, Producto } from '../shared/producto.types'
+import type { Producto } from '../shared/producto.types'
 
 interface ComponenteInput {
   componente_id: string
