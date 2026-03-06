@@ -35,10 +35,15 @@ class Suscripcion extends BaseModel
 
     public function calcularMontoProrrateo(Plan $planNuevo): float
     {
-        $diasRestantes   = now()->diffInDays($this->fecha_vencimiento, false);
-        $diasRestantes   = max(0, $diasRestantes);
+        $diasRestantes    = max(0, now()->diffInDays($this->fecha_vencimiento, false));
         $diferenciaPrecio = (float) $planNuevo->precio_mensual - (float) $this->plan->precio_mensual;
 
+        // Cuenta vencida/sin días, o downgrade → cobrar precio mensual completo del plan nuevo
+        if ($diasRestantes === 0 || $diferenciaPrecio < 0) {
+            return round((float) $planNuevo->precio_mensual, 2);
+        }
+
+        // Upgrade activo → cobrar diferencia proporcional por los días restantes
         return round(($diferenciaPrecio / 30) * $diasRestantes, 2);
     }
 

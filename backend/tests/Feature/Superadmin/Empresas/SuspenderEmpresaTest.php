@@ -86,11 +86,11 @@ class SuspenderEmpresaTest extends TestCase
             ->postJson("/superadmin/api/empresas/{$empresa->id}/suspender")
             ->assertOk();
 
-        // Owner login returns redirect to reactivar (subscription cancelada)
+        // Owner login returns redirect to plan page (subscription cancelada)
         $this->postJson('/api/auth/login', [
             'email'    => $owner->email,
             'password' => 'password123',
         ])->assertOk()
-          ->assertJsonPath('data.user.suscripcion.redirect', '/reactivar');
+          ->assertJsonPath('data.user.suscripcion.redirect', '/configuracion/plan');
     }
 }

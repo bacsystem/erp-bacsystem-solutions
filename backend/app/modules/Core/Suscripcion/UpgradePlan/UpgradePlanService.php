@@ -24,9 +24,9 @@ class UpgradePlanService
         $suscripcion = $empresa->suscripcionActiva;
         $planNuevo   = Plan::findOrFail($data['plan_id']);
 
-        if (! $planNuevo->esUpgradeDe($suscripcion->plan)) {
+        if ($planNuevo->id === $suscripcion->plan_id && ! $suscripcion->esVencida() && ! $suscripcion->esCancelada()) {
             throw ValidationException::withMessages([
-                'plan_id' => ['El plan seleccionado no es superior al actual.'],
+                'plan_id' => ['Ya estás en este plan.'],
             ]);
         }
 

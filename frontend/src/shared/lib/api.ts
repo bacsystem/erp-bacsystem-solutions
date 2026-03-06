@@ -1,4 +1,5 @@
 import axios, { type AxiosError } from 'axios'
+import { toast } from 'sonner'
 import { useAuthStore } from '@/shared/stores/auth.store'
 
 export const api = axios.create({
@@ -35,7 +36,25 @@ api.interceptors.response.use(
   async (error: AxiosError) => {
     const original = error.config as typeof error.config & { _retry?: boolean }
 
-    if (error.response?.status === 401 && original && !original._retry) {
+    if (error.response?.status === 402) {
+      const data = error.response.data as { message?: string; errors?: { redirect?: string } }
+      const mensaje = data?.message ?? 'Tu suscripción ha vencido.'
+      const redirect = data?.errors?.redirect ?? '/configuracion/plan'
+
+      toast.warning(mensaje, {
+        duration: 8000,
+        action: {
+          label: redirect === '/reactivar' ? 'Reactivar' : 'Ver planes',
+          onClick: () => { window.location.href = redirect },
+        },
+      })
+
+      return Promise.reject(error)
+    }
+
+    const isAuthEndpoint = original?.url?.includes('/auth/login') || original?.url?.includes('/auth/refresh')
+
+    if (error.response?.status === 401 && original && !original._retry && !isAuthEndpoint) {
       if (isRefreshing) {
         return new Promise((resolve, reject) => {
           refreshQueue.push({
@@ -66,7 +85,10 @@ api.interceptors.response.use(
         rejectQueue(refreshError)
         useAuthStore.getState().logout()
         if (typeof window !== 'undefined') {
-          window.location.href = '/login'
+          // Limpiar has_session para que el middleware no redirija de vuelta al dashboard
+          document.cookie = 'has_session=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;'
+          toast.error('Tu sesión ha expirado. Por favor, inicia sesión de nuevo.', { duration: 4000 })
+          setTimeout(() => { window.location.href = '/login' }, 1000)
         }
         return Promise.reject(refreshError)
       } finally {

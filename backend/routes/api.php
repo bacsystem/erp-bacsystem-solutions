@@ -15,6 +15,7 @@ use App\Modules\Core\Me\UpdateProfileController;
 use App\Modules\Core\Suscripcion\DowngradePlan\DowngradePlanController;
 use App\Modules\Core\Suscripcion\GetSuscripcion\GetSuscripcionController;
 use App\Modules\Core\Suscripcion\UpgradePlan\UpgradePlanController;
+use App\Modules\Core\Suscripcion\YapeToken\YapeTokenController;
 use App\Modules\Core\Usuario\ActivarCuenta\ActivarCuentaController;
 use App\Modules\Core\Usuario\ActualizarRol\ActualizarRolController;
 use App\Modules\Core\Usuario\DesactivarUsuario\DesactivarUsuarioController;
@@ -67,7 +68,7 @@ Route::post('auth/activar-cuenta', ActivarCuentaController::class);
 // Rutas protegidas — requieren autenticación
 // ─────────────────────────────────────────────────────────────────
 
-Route::middleware(['auth:sanctum', 'tenant'])->group(function () {
+Route::middleware(['auth:sanctum', 'tenant', 'suscripcion.activa'])->group(function () {
 
     // Auth
     Route::post('auth/logout', LogoutController::class);
@@ -76,25 +77,16 @@ Route::middleware(['auth:sanctum', 'tenant'])->group(function () {
     Route::get('me', GetProfileController::class);
     Route::put('me', UpdateProfileController::class);
 
-    // Empresa — suscripción activa requerida solo para escritura
-    // GET /api/empresa NO lleva suscripcion.activa (disponible en estado cancelada)
+    // Empresa
     Route::get('empresa', GetEmpresaController::class);
+    Route::put('empresa', UpdateEmpresaController::class)->middleware('role:owner,admin');
+    Route::post('empresa/logo', UploadLogoController::class)->middleware('role:owner,admin');
 
-    Route::middleware('suscripcion.activa')->group(function () {
-        Route::put('empresa', UpdateEmpresaController::class)
-            ->middleware('role:owner,admin');
-        Route::post('empresa/logo', UploadLogoController::class)
-            ->middleware('role:owner,admin');
-
-        // Usuarios
-        Route::get('usuarios', ListarUsuariosController::class);
-        Route::post('usuarios/invitar', InviteUsuarioController::class)
-            ->middleware('role:owner,admin');
-        Route::put('usuarios/{usuario}/rol', ActualizarRolController::class)
-            ->middleware('role:owner,admin');
-        Route::put('usuarios/{usuario}/desactivar', DesactivarUsuarioController::class)
-            ->middleware('role:owner,admin');
-    });
+    // Usuarios
+    Route::get('usuarios', ListarUsuariosController::class);
+    Route::post('usuarios/invitar', InviteUsuarioController::class)->middleware('role:owner,admin');
+    Route::put('usuarios/{usuario}/rol', ActualizarRolController::class)->middleware('role:owner,admin');
+    Route::put('usuarios/{usuario}/desactivar', DesactivarUsuarioController::class)->middleware('role:owner,admin');
 
     // ─── Categorías ───────────────────────────────────────────────
     Route::get('categorias', ListarCategoriasController::class);
@@ -104,7 +96,7 @@ Route::middleware(['auth:sanctum', 'tenant'])->group(function () {
         Route::delete('categorias/{categoria}', EliminarCategoriaController::class);
     });
 
-    // ─── Productos — lectura ───────────────────────────────────────
+    // ─── Productos ────────────────────────────────────────────────
     Route::get('productos/exportar/pdf', ExportarPDFController::class);
     Route::get('productos/exportar', ExportarExcelController::class);
     Route::get('productos/importar/template', [ImportarProductosController::class, 'template']);
@@ -112,16 +104,11 @@ Route::middleware(['auth:sanctum', 'tenant'])->group(function () {
     Route::get('productos/{producto}', GetProductoDetalleController::class);
     Route::get('productos', ListarProductosController::class);
 
-    // ─── Productos — escritura ─────────────────────────────────────
     Route::middleware('role:owner,admin')->group(function () {
-        Route::post('productos', CrearProductoController::class)
-            ->middleware('suscripcion.activa');
-        Route::put('productos/{producto}', ActualizarProductoController::class)
-            ->middleware('suscripcion.activa');
-        Route::delete('productos/{producto}', DesactivarProductoController::class)
-            ->middleware('suscripcion.activa');
-        Route::patch('productos/{producto}/activar', ActivarProductoController::class)
-            ->middleware('suscripcion.activa');
+        Route::post('productos', CrearProductoController::class);
+        Route::put('productos/{producto}', ActualizarProductoController::class);
+        Route::delete('productos/{producto}', DesactivarProductoController::class);
+        Route::patch('productos/{producto}/activar', ActivarProductoController::class);
         Route::post('productos/{producto}/imagenes', SubirImagenController::class);
         Route::delete('productos/{producto}/imagenes/{imagen}', EliminarImagenController::class);
         Route::post('productos/importar', ImportarProductosController::class);
@@ -130,11 +117,9 @@ Route::middleware(['auth:sanctum', 'tenant'])->group(function () {
         Route::delete('productos/{producto}/promociones/{promocion}', DesactivarPromocionController::class);
     });
 
-    // Suscripción — solo owner
-    // upgrade siempre disponible (incluso en estado vencida)
+    // ─── Suscripción ──────────────────────────────────────────────
     Route::get('suscripcion', GetSuscripcionController::class);
-    Route::post('suscripcion/upgrade', UpgradePlanController::class)
-        ->middleware('role:owner');
-    Route::post('suscripcion/downgrade', DowngradePlanController::class)
-        ->middleware(['role:owner', 'suscripcion.activa']);
+    Route::post('suscripcion/upgrade', UpgradePlanController::class)->middleware('role:owner');
+    Route::post('suscripcion/yape-token', YapeTokenController::class)->middleware('role:owner');
+    Route::post('suscripcion/downgrade', DowngradePlanController::class)->middleware('role:owner');
 });

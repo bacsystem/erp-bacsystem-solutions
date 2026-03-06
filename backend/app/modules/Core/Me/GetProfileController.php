@@ -29,7 +29,7 @@ class GetProfileController
                 'estado'   => $suscripcion?->estado,
                 'plan'     => $suscripcion?->plan?->nombre,
                 'modulos'  => $suscripcion?->estado === 'cancelada' ? [] : ($suscripcion?->plan?->modulos ?? []),
-                'redirect' => $suscripcion?->estado === 'cancelada' ? '/reactivar' : null,
+                'redirect' => $suscripcion?->estado === 'cancelada' ? '/configuracion/plan' : null,
             ],
         ]);
     }

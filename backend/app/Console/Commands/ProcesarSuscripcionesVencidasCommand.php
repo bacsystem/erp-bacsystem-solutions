@@ -19,6 +19,7 @@ class ProcesarSuscripcionesVencidasCommand extends Command
     {
         $this->enviarAvisosTrial();
         $this->vencerTrials();
+        $this->vencerActivas();
         $this->cancelarVencidas();
 
         return self::SUCCESS;
@@ -67,6 +68,19 @@ class ProcesarSuscripcionesVencidasCommand extends Command
             }
 
             Log::info("Trial vencido para empresa {$suscripcion->empresa_id}");
+        }
+    }
+
+    private function vencerActivas(): void
+    {
+        // Suscripciones de pago activas con fecha_vencimiento pasada → vencidas
+        // (el cobro mensual no se procesó o falló sin tarjeta registrada)
+        $count = Suscripcion::where('estado', 'activa')
+            ->whereDate('fecha_vencimiento', '<', today())
+            ->update(['estado' => 'vencida']);
+
+        if ($count > 0) {
+            Log::info("Marcadas {$count} suscripciones activas como vencidas por fecha expirada.");
         }
     }
 
