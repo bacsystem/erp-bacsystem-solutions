@@ -1,4 +1,5 @@
 import { api } from '@/shared/lib/api';
+import type { UserPayload } from '@/shared/types';
 import type { SuscripcionData } from '@/modules/core/suscripcion/get-suscripcion/use-suscripcion';
 
 export interface UpgradePayload {
@@ -8,7 +9,7 @@ export interface UpgradePayload {
 
 export interface UpgradeResult extends Partial<SuscripcionData> {
   access_token?: string;
-  user?: Record<string, unknown>;
+  user?: UserPayload;
 }
 
 export const upgradePlanApi = (data: UpgradePayload) =>
