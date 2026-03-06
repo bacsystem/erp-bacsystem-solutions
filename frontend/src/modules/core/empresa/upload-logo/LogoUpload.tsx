@@ -44,7 +44,7 @@ export function LogoUpload({ currentLogo }: Readonly<{ currentLogo?: string | nu
     if (file) processFile(file);
   };
 
-  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+  const handleDrop = (e: React.DragEvent<HTMLElement>) => {
     e.preventDefault();
     setIsDragging(false);
     const file = e.dataTransfer.files?.[0];

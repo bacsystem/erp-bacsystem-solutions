@@ -67,7 +67,7 @@ export function UsuariosTable() {
   const { data, isLoading } = useListarUsuarios();
   const { mutate: cambiarRol } = useActualizarRol();
   const { mutate: desactivar } = useDesactivarUsuario();
-  const [confirmId, setConfirmId] = useState<number | null>(null);
+  const [confirmId, setConfirmId] = useState<string | null>(null);
 
   const puedeGestionar = user?.rol === 'owner' || user?.rol === 'admin';
   const cols = puedeGestionar ? 4 : 3;

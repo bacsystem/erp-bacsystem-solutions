@@ -25,11 +25,15 @@ class AppServiceProvider extends ServiceProvider
         );
 
         RateLimiter::for('login', fn (Request $req) =>
-            Limit::perMinutes(15, 50)->by($req->ip())
+            Limit::perMinutes(15, (int) env('LOGIN_RATE_LIMIT', 50))->by($req->ip())
         );
 
         RateLimiter::for('register', fn (Request $req) =>
             Limit::perHour(100)->by($req->ip())
+        );
+
+        RateLimiter::for('superadmin-login', fn (Request $req) =>
+            Limit::perMinutes(15, (int) env('SUPERADMIN_LOGIN_RATE_LIMIT', 3))->by($req->ip())
         );
     }
 }

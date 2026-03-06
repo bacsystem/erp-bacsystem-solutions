@@ -18,7 +18,11 @@ abstract class BaseModel extends Model
         static::creating(fn ($m) => $m->id ??= (string) Str::uuid());
 
         static::addGlobalScope('empresa', function (Builder $query) {
-            if (auth()->check() && $query->getModel()->isFillable('empresa_id')) {
+            if (
+                auth()->check()
+                && $query->getModel()->isFillable('empresa_id')
+                && ! is_null(auth()->user()->empresa_id ?? null)
+            ) {
                 $query->where(
                     $query->getModel()->getTable() . '.empresa_id',
                     auth()->user()->empresa_id

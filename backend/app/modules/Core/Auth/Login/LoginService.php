@@ -18,9 +18,8 @@ class LoginService
             ->first();
 
         if (! $usuario || ! Hash::check($data['password'], $usuario->password)) {
-            // Registrar intento fallido
             AuditLog::create([
-                'empresa_id' => $usuario?->empresa_id,
+                'empresa_id' => $usuario?->empresa_id,   // null si el email no existe
                 'usuario_id' => $usuario?->id,
                 'accion'     => 'login_failed',
                 'ip'         => request()->ip(),
@@ -88,6 +87,7 @@ class LoginService
             'rol'     => $u->rol,
             'empresa' => [
                 'id'               => $e->id,
+                'razon_social'     => $e->razon_social,
                 'nombre_comercial' => $e->nombre_comercial,
                 'ruc'              => $e->getRawOriginal('ruc'),
                 'logo_url'         => $e->logo_url,

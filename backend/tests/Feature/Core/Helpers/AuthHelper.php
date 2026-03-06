@@ -14,7 +14,7 @@ trait AuthHelper
         static $planCounter = 0;
         $planCounter++;
         $plan = Plan::factory()->create(array_merge([
-            'nombre'         => 'pyme_test_' . $planCounter . '_' . uniqid(),
+            'nombre'         => substr('plan_' . uniqid(), 0, 20),
             'nombre_display' => 'PYME',
             'precio_mensual' => 129.00,
             'max_usuarios'   => 15,

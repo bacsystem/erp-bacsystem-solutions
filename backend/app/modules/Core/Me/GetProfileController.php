@@ -19,9 +19,11 @@ class GetProfileController
             'email'  => $usuario->getRawOriginal('email'),
             'rol'    => $usuario->rol,
             'empresa' => [
-                'id'           => $empresa->id,
-                'razon_social' => $empresa->razon_social,
-                'logo_url'     => $empresa->logo_url,
+                'id'               => $empresa->id,
+                'razon_social'     => $empresa->razon_social,
+                'nombre_comercial' => $empresa->nombre_comercial,
+                'ruc'              => $empresa->getRawOriginal('ruc'),
+                'logo_url'         => $empresa->logo_url,
             ],
             'suscripcion' => [
                 'estado'   => $suscripcion?->estado,

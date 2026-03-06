@@ -2,6 +2,8 @@
 
 namespace App\Shared\Middleware;
 
+use App\Modules\Core\Models\Usuario;
+use App\Shared\Http\Responses\ApiResponse;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -11,7 +13,13 @@ class TenantMiddleware
 {
     public function handle(Request $request, Closure $next): Response
     {
-        $empresaId = auth()->user()->empresa_id;
+        $user = auth()->user();
+
+        if (! $user instanceof Usuario) {
+            return ApiResponse::error('No autenticado', [], 401);
+        }
+
+        $empresaId = $user->empresa_id;
 
         if (DB::getDriverName() !== 'pgsql') {
             return $next($request);

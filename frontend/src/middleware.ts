@@ -6,11 +6,19 @@ const PUBLIC_PATHS = [
   '/recuperar-password',
   '/reset-password',
   '/activar',
+  '/superadmin/login',
 ]
 
 export function middleware(req: NextRequest) {
   const hasSession = req.cookies.get('has_session')?.value === '1'
   const path = req.nextUrl.pathname
+
+  // Superadmin routes are handled client-side via Zustand store
+  // The layout.tsx for (superadmin) group manages authentication
+  if (path.startsWith('/superadmin')) {
+    return NextResponse.next()
+  }
+
   const isPublic = PUBLIC_PATHS.some((p) => path.startsWith(p))
 
   if (!hasSession && !isPublic) {
