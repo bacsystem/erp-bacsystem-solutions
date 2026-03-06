@@ -29,9 +29,3 @@ jobs:
         working-directory: backend
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-
-      - name: Run database migrations
-        run: railway run --service=${{ secrets.RAILWAY_SERVICE_ID }} -- php artisan migrate --force
-        working-directory: backend
-        env:
-          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
