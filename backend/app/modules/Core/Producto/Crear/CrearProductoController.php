@@ -1,6 +1,21 @@
 <?php
+
 namespace App\Modules\Core\Producto\Crear;
+
 use App\Shared\Http\Responses\ApiResponse;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
-class CrearProductoController { public function __invoke(Request $r): JsonResponse { return ApiResponse::success([], 'stub', 201); } }
+
+class CrearProductoController
+{
+    public function __invoke(CrearProductoRequest $request, CrearProductoService $service): JsonResponse
+    {
+        $usuario = auth()->user();
+        $producto = $service->handle(
+            $request->validated(),
+            $usuario->empresa_id,
+            $usuario->id,
+        );
+
+        return ApiResponse::success($producto, 'Producto creado exitosamente.', 201);
+    }
+}

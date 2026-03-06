@@ -45,4 +45,53 @@ trait AuthHelper
     {
         return $usuario->createToken('access', ['*'], now()->addMinutes(15))->plainTextToken;
     }
+
+    /**
+     * Creates a tenant context (empresa + suscripcion + usuario) and returns [usuario, token].
+     */
+    protected function actingAsTenant(string $rol = 'owner'): array
+    {
+        $plan = Plan::factory()->create([
+            'nombre'         => substr('plan_' . uniqid(), 0, 20),
+            'nombre_display' => 'PYME',
+            'precio_mensual' => 129.00,
+            'max_usuarios'   => 15,
+            'modulos'        => ['facturacion', 'clientes', 'productos', 'inventario', 'crm', 'finanzas', 'ia'],
+        ]);
+
+        $empresa = Empresa::factory()->create();
+
+        Suscripcion::factory()->create([
+            'empresa_id'        => $empresa->id,
+            'plan_id'           => $plan->id,
+            'estado'            => 'activa',
+            'fecha_vencimiento' => today()->addDays(30),
+        ]);
+
+        $usuario = Usuario::factory()->create([
+            'empresa_id' => $empresa->id,
+            'rol'        => $rol,
+            'activo'     => true,
+        ]);
+
+        $token = $usuario->createToken('access', ['*'], now()->addMinutes(15))->plainTextToken;
+
+        return [$usuario, $token];
+    }
+
+    /**
+     * Creates a user with the given role in an existing empresa, returns [usuario, token].
+     */
+    protected function actingAsTenantWithSameEmpresa(string $empresaId, string $rol = 'empleado'): array
+    {
+        $usuario = Usuario::factory()->create([
+            'empresa_id' => $empresaId,
+            'rol'        => $rol,
+            'activo'     => true,
+        ]);
+
+        $token = $usuario->createToken('access', ['*'], now()->addMinutes(15))->plainTextToken;
+
+        return [$usuario, $token];
+    }
 }

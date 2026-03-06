@@ -5,6 +5,16 @@ import Link from 'next/link'
 import { Search } from 'lucide-react'
 import { useEmpresas } from './use-empresas'
 
+interface EmpresaRow {
+  id: string;
+  razon_social: string;
+  ruc: string;
+  plan: string | null;
+  estado: string | null;
+  mrr: number | null;
+  fecha_registro: string | null;
+}
+
 const ESTADO_COLORS: Record<string, string> = {
   activa: 'text-green-400 bg-green-900/30',
   trial: 'text-yellow-400 bg-yellow-900/30',
@@ -59,16 +69,17 @@ export default function EmpresasTable() {
             </tr>
           </thead>
           <tbody>
-            {isLoading ? (
+            {isLoading && (
               <tr>
                 <td colSpan={6} className="px-4 py-8 text-center text-gray-400">Cargando...</td>
               </tr>
-            ) : empresas.length === 0 ? (
+            )}
+            {!isLoading && empresas.length === 0 && (
               <tr>
                 <td colSpan={6} className="px-4 py-8 text-center text-gray-500">No se encontraron empresas</td>
               </tr>
-            ) : (
-              empresas.map((e: any) => (
+            )}
+            {!isLoading && empresas.length > 0 && empresas.map((e: EmpresaRow) => (
                 <tr key={e.id} className="border-b border-gray-700/50 hover:bg-gray-700/30">
                   <td className="px-4 py-3">
                     <Link href={`/superadmin/empresas/${e.id}`} className="text-indigo-400 hover:text-indigo-300 font-medium">
@@ -78,7 +89,7 @@ export default function EmpresasTable() {
                   <td className="px-4 py-3 text-gray-300 font-mono text-xs">{e.ruc}</td>
                   <td className="px-4 py-3 text-gray-300">{e.plan ?? '—'}</td>
                   <td className="px-4 py-3">
-                    <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${ESTADO_COLORS[e.estado] ?? 'text-gray-400'}`}>
+                    <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${ESTADO_COLORS[e.estado ?? ''] ?? 'text-gray-400'}`}>
                       {e.estado ?? '—'}
                     </span>
                   </td>
@@ -88,7 +99,7 @@ export default function EmpresasTable() {
                   </td>
                 </tr>
               ))
-            )}
+            }
           </tbody>
         </table>
       </div>

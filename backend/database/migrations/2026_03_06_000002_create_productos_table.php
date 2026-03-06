@@ -10,7 +10,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('productos', function (Blueprint $table) {
-            $table->uuid('id')->primary()->default(DB::raw('gen_random_uuid()'));
+            $table->uuid('id')->primary();
             $table->uuid('empresa_id');
             $table->uuid('categoria_id');
             $table->string('nombre', 255);
@@ -35,7 +35,9 @@ return new class extends Migration
             $table->index(['empresa_id', 'codigo_barras'], 'idx_productos_codigo_barras');
         });
 
-        DB::statement('ALTER TABLE productos ADD CONSTRAINT chk_precio_venta CHECK (precio_venta > 0)');
+        if (DB::getDriverName() === 'pgsql') {
+            DB::statement('ALTER TABLE productos ADD CONSTRAINT chk_precio_venta CHECK (precio_venta > 0)');
+        }
     }
 
     public function down(): void

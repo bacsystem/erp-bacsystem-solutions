@@ -1,6 +1,16 @@
 <?php
+
 namespace App\Modules\Core\Producto\EliminarImagen;
+
 use App\Shared\Http\Responses\ApiResponse;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
-class EliminarImagenController { public function __invoke(Request $r, string $id, string $imgId): JsonResponse { return ApiResponse::success([], 'stub'); } }
+
+class EliminarImagenController
+{
+    public function __invoke(string $producto, string $imagen, EliminarImagenService $service): JsonResponse
+    {
+        $service->handle($producto, $imagen);
+
+        return ApiResponse::success(null, 'Imagen eliminada exitosamente.');
+    }
+}

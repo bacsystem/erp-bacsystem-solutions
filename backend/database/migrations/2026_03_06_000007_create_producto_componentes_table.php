@@ -10,7 +10,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('producto_componentes', function (Blueprint $table) {
-            $table->uuid('id')->primary()->default(DB::raw('gen_random_uuid()'));
+            $table->uuid('id')->primary();
             $table->uuid('producto_id');
             $table->uuid('componente_id');
             $table->decimal('cantidad', 12, 4);
@@ -21,8 +21,10 @@ return new class extends Migration
             $table->unique(['producto_id', 'componente_id'], 'unique_componente');
         });
 
-        DB::statement('ALTER TABLE producto_componentes ADD CONSTRAINT chk_no_self_ref CHECK (producto_id != componente_id)');
-        DB::statement('ALTER TABLE producto_componentes ADD CONSTRAINT chk_cantidad CHECK (cantidad > 0)');
+        if (DB::getDriverName() === 'pgsql') {
+            DB::statement('ALTER TABLE producto_componentes ADD CONSTRAINT chk_no_self_ref CHECK (producto_id != componente_id)');
+            DB::statement('ALTER TABLE producto_componentes ADD CONSTRAINT chk_cantidad CHECK (cantidad > 0)');
+        }
     }
 
     public function down(): void

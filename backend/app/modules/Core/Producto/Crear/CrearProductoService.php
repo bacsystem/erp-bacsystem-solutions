@@ -65,11 +65,12 @@ class CrearProductoService
                 }
             }
 
-            AuditLog::create([
-                'empresa_id'  => $empresaId,
-                'usuario_id'  => $usuarioId,
-                'accion'      => 'producto.crear',
-                'descripcion' => "Producto creado: {$producto->nombre} (SKU: {$producto->sku})",
+            AuditLog::registrar('producto.crear', [
+                'empresa_id'     => $empresaId,
+                'usuario_id'     => $usuarioId,
+                'tabla_afectada' => 'productos',
+                'registro_id'    => $producto->id,
+                'datos_nuevos'   => ['nombre' => $producto->nombre, 'sku' => $producto->sku],
             ]);
 
             return $producto->load(['categoria', 'imagenes', 'preciosLista', 'unidades', 'componentes']);

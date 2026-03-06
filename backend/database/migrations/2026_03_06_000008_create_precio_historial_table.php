@@ -10,7 +10,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('precio_historial', function (Blueprint $table) {
-            $table->uuid('id')->primary()->default(DB::raw('gen_random_uuid()'));
+            $table->uuid('id')->primary();
             $table->uuid('producto_id');
             $table->decimal('precio_anterior', 12, 4);
             $table->decimal('precio_nuevo', 12, 4);

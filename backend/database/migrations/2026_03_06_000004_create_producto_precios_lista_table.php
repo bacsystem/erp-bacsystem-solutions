@@ -10,7 +10,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('producto_precios_lista', function (Blueprint $table) {
-            $table->uuid('id')->primary()->default(DB::raw('gen_random_uuid()'));
+            $table->uuid('id')->primary();
             $table->uuid('producto_id');
             $table->enum('lista', ['L1', 'L2', 'L3']);
             $table->string('nombre_lista', 60)->default('Lista');
@@ -21,7 +21,9 @@ return new class extends Migration
             $table->unique(['producto_id', 'lista'], 'unique_precio_lista');
         });
 
-        DB::statement('ALTER TABLE producto_precios_lista ADD CONSTRAINT chk_precio_lista CHECK (precio > 0)');
+        if (DB::getDriverName() === 'pgsql') {
+            DB::statement('ALTER TABLE producto_precios_lista ADD CONSTRAINT chk_precio_lista CHECK (precio > 0)');
+        }
     }
 
     public function down(): void

@@ -9,7 +9,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('categorias', function (Blueprint $table) {
-            $table->uuid('id')->primary()->default(DB::raw('gen_random_uuid()'));
+            $table->uuid('id')->primary();
             $table->uuid('empresa_id');
             $table->string('nombre', 120);
             $table->text('descripcion')->nullable();
@@ -18,11 +18,15 @@ return new class extends Migration
             $table->timestamps();
 
             $table->foreign('empresa_id')->references('id')->on('empresas')->cascadeOnDelete();
-            $table->foreign('categoria_padre_id')->references('id')->on('categorias')->nullOnDelete();
 
             $table->index('empresa_id', 'idx_categorias_empresa');
             $table->index('categoria_padre_id', 'idx_categorias_padre');
             $table->unique(['empresa_id', 'nombre', 'categoria_padre_id'], 'unique_categoria_nombre_empresa');
+        });
+
+        // Self-referencing FK must be added after the table is created and committed
+        Schema::table('categorias', function (Blueprint $table) {
+            $table->foreign('categoria_padre_id')->references('id')->on('categorias')->nullOnDelete();
         });
     }
 

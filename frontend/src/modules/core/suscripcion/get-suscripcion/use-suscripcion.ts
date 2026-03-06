@@ -31,7 +31,7 @@ export interface SuscripcionData {
 }
 
 const fetchSuscripcion = async (): Promise<SuscripcionData> => {
-  const res = await api.get<{ data: any }>('/suscripcion');
+  const res = await api.get<{ data: SuscripcionData }>('/suscripcion');
   const d = res.data.data;
   return {
     ...d,

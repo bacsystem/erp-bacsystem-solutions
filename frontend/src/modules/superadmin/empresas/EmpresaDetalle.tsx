@@ -6,6 +6,29 @@ import SuspenderModal from './SuspenderModal'
 import ActivarModal from './ActivarModal'
 import ImpersonarButton from '../impersonacion/ImpersonarButton'
 
+interface DetalleUsuario {
+  id: string;
+  nombre: string;
+  email: string;
+  rol: string;
+  activo: boolean;
+}
+
+interface DetalleSuscripcion {
+  id: string;
+  plan: { nombre_display: string } | null;
+  estado: string;
+  fecha_inicio: string;
+  fecha_vencimiento: string;
+}
+
+interface DetalleLog {
+  id: string;
+  accion: string;
+  ip: string;
+  created_at: string;
+}
+
 const TABS = ['Datos', 'Usuarios', 'Suscripciones', 'Logs', 'Métricas'] as const
 type Tab = typeof TABS[number]
 
@@ -16,7 +39,7 @@ const ESTADO_COLORS: Record<string, string> = {
   cancelada: 'text-red-400 bg-red-900/30',
 }
 
-export default function EmpresaDetalle({ id }: { id: string }) {
+export default function EmpresaDetalle({ id }: { readonly id: string }) {
   const { data, isLoading } = useEmpresaDetalle(id)
   const [tab, setTab] = useState<Tab>('Datos')
   const [showSuspender, setShowSuspender] = useState(false)
@@ -114,7 +137,7 @@ export default function EmpresaDetalle({ id }: { id: string }) {
               </tr>
             </thead>
             <tbody>
-              {(data.usuarios ?? []).map((u: any) => (
+              {(data.usuarios ?? [] as DetalleUsuario[]).map((u: DetalleUsuario) => (
                 <tr key={u.id} className="border-b border-gray-700/50">
                   <td className="py-2 text-white">{u.nombre}</td>
                   <td className="py-2 text-gray-300">{u.email}</td>
@@ -141,7 +164,7 @@ export default function EmpresaDetalle({ id }: { id: string }) {
               </tr>
             </thead>
             <tbody>
-              {(data.suscripciones ?? []).map((s: any) => (
+              {(data.suscripciones ?? [] as DetalleSuscripcion[]).map((s: DetalleSuscripcion) => (
                 <tr key={s.id} className="border-b border-gray-700/50">
                   <td className="py-2 text-white">{s.plan?.nombre_display ?? '—'}</td>
                   <td className="py-2">
@@ -165,7 +188,7 @@ export default function EmpresaDetalle({ id }: { id: string }) {
               </tr>
             </thead>
             <tbody>
-              {(data.audit_logs ?? []).map((log: any) => (
+              {(data.audit_logs ?? [] as DetalleLog[]).map((log: DetalleLog) => (
                 <tr key={log.id} className="border-b border-gray-700/50">
                   <td className="py-2 text-white font-mono text-xs">{log.accion}</td>
                   <td className="py-2 text-gray-300 font-mono text-xs">{log.ip}</td>

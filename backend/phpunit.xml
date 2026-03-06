@@ -31,5 +31,6 @@
         <env name="TELESCOPE_ENABLED" value="false"/>
         <env name="LOGIN_RATE_LIMIT" value="5"/>
         <env name="SUPERADMIN_LOGIN_RATE_LIMIT" value="3"/>
+        <env name="REDIS_CLIENT" value="predis"/>
     </php>
 </phpunit>
