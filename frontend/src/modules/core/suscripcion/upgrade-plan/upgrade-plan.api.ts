@@ -6,5 +6,10 @@ export interface UpgradePayload {
   culqi_token: string;
 }
 
+export interface UpgradeResult extends Partial<SuscripcionData> {
+  access_token?: string;
+  user?: Record<string, unknown>;
+}
+
 export const upgradePlanApi = (data: UpgradePayload) =>
-  api.post<{ data: SuscripcionData }>('/suscripcion/upgrade', data).then((r) => r.data.data);
+  api.post<{ data: UpgradeResult }>('/suscripcion/upgrade', data).then((r) => r.data.data);
