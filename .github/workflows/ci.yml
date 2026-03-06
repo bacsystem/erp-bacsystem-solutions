@@ -77,4 +77,5 @@ jobs:
       - name: Build
         env:
           NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
+          NEXT_PUBLIC_CULQI_PUBLIC_KEY: ${{ secrets.NEXT_PUBLIC_CULQI_PUBLIC_KEY }}
         run: npm run build

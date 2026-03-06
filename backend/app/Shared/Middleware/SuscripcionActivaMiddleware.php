@@ -12,10 +12,11 @@ class SuscripcionActivaMiddleware
     // Rutas siempre permitidas incluso con suscripción vencida
     private const RUTAS_PERMITIDAS_VENCIDA = [
         'POST:api/suscripcion/upgrade',
+        'POST:api/suscripcion/yape-token',
         'POST:api/auth/logout',
         'GET:api/me',
         'GET:api/suscripcion',
-        'GET:api/empresa',          // necesario para /reactivar
+        'GET:api/empresa',
     ];
 
     public function handle(Request $request, Closure $next): Response
@@ -23,20 +24,30 @@ class SuscripcionActivaMiddleware
         $suscripcion = auth()->user()->empresa->suscripcionActiva;
 
         if ($suscripcion?->esCancelada()) {
-            // Permitir solo GET /api/empresa para la pantalla /reactivar
-            if ($request->method() === 'GET' && $request->path() === 'api/empresa') {
-                return $next($request);
+            $key      = $request->method() . ':' . $request->path();
+            $isExcluida = in_array($key, self::RUTAS_PERMITIDAS_VENCIDA)
+                || in_array($request->method(), ['GET', 'HEAD']);
+
+            if (! $isExcluida) {
+                return ApiResponse::error(
+                    'Tu suscripción está cancelada.',
+                    ['redirect' => '/configuracion/plan'],
+                    402
+                );
             }
 
-            return ApiResponse::error(
-                'Tu suscripción está cancelada.',
-                ['redirect' => '/reactivar'],
-                402
-            );
+            return $next($request);
         }
 
-        if ($suscripcion?->esVencida()) {
-            $key       = $request->method() . ':' . $request->path();
+        // Considerar vencida cuando la fecha de vencimiento ya pasó (job diario no corrió aún)
+        // Se usa lt (estrictamente menor): el día de vencimiento el cobro debería renovarla.
+        // Si no tiene tarjeta o el cobro falló, el job la marca 'vencida' con fecha_vencimiento = hoy
+        // y esVencida() la captura en la condición anterior.
+        $estaVencida = $suscripcion?->esVencida()
+            || ($suscripcion?->esActiva() && $suscripcion->fecha_vencimiento->lt(today()));
+
+        if ($estaVencida) {
+            $key        = $request->method() . ':' . $request->path();
             $isReadOnly = in_array($request->method(), ['GET', 'HEAD']);
             $isExcluida = in_array($key, self::RUTAS_PERMITIDAS_VENCIDA);
 

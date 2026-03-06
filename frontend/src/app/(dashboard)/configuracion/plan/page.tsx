@@ -10,7 +10,6 @@ import {
   Loader2,
   Package,
   Star,
-  TrendingDown,
   TrendingUp,
   Users,
   Zap,
@@ -21,7 +20,6 @@ import { useSuscripcion } from '@/modules/core/suscripcion/get-suscripcion/use-s
 import { getPlanes } from '@/modules/core/auth/register/register.api';
 import { useAuthStore } from '@/shared/stores/auth.store';
 import { UpgradePlanModal } from '@/modules/core/suscripcion/upgrade-plan/UpgradePlanModal';
-import { DowngradePlanModal } from '@/modules/core/suscripcion/downgrade-plan/DowngradePlanModal';
 import type { Plan } from '@/modules/core/auth/register/register.api';
 
 const estadoBadge: Record<string, { label: string; className: string }> = {
@@ -41,11 +39,11 @@ export default function PlanPage() {
   const { data: suscripcion, isLoading } = useSuscripcion();
   const { data: planes = [] } = useQuery({ queryKey: ['planes'], queryFn: getPlanes });
   const [upgradeTarget, setUpgradeTarget] = useState<Plan | null>(null);
-  const [downgradeTarget, setDowngradeTarget] = useState<Plan | null>(null);
 
   const esOwner = user?.rol === 'owner';
   const currentPrecio = suscripcion?.plan?.precio_mensual ?? 0;
   const badge = estadoBadge[suscripcion?.estado ?? ''] ?? { label: suscripcion?.estado ?? '', className: 'bg-gray-100 text-gray-600' };
+  const estaVencidaOCancelada = suscripcion?.estado === 'vencida' || suscripcion?.estado === 'cancelada';
 
   return (
     <div className="flex h-screen overflow-hidden">
@@ -152,6 +150,7 @@ export default function PlanPage() {
                       const esPlanActual = plan.nombre === suscripcion.plan?.nombre || plan.id === suscripcion.plan?.id;
                       const esUpgrade = !esPlanActual && plan.precio_mensual > currentPrecio;
                       const esDowngrade = !esPlanActual && plan.precio_mensual < currentPrecio;
+                      const puedeRenovar = estaVencidaOCancelada;
 
                       return (
                         <div
@@ -201,9 +200,20 @@ export default function PlanPage() {
                             ))}
                           </ul>
 
-                          {esOwner && !esPlanActual && (
+                          {esOwner && (
                             <div className="mt-5">
-                              {esUpgrade ? (
+                              {puedeRenovar ? (
+                                <button
+                                  onClick={() => setUpgradeTarget(plan)}
+                                  className="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-xl py-2.5 text-sm font-medium transition flex items-center justify-center gap-2"
+                                >
+                                  <TrendingUp className="w-4 h-4" /> {esPlanActual ? 'Renovar plan' : 'Activar este plan'}
+                                </button>
+                              ) : esPlanActual ? (
+                                <div className="w-full bg-green-50 text-green-700 rounded-xl py-2.5 text-sm font-medium text-center border border-green-200">
+                                  Plan activo
+                                </div>
+                              ) : esUpgrade ? (
                                 <button
                                   onClick={() => setUpgradeTarget(plan)}
                                   className="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-xl py-2.5 text-sm font-medium transition flex items-center justify-center gap-2"
@@ -212,24 +222,16 @@ export default function PlanPage() {
                                 </button>
                               ) : esDowngrade ? (
                                 <button
-                                  onClick={() => setDowngradeTarget(plan)}
+                                  onClick={() => setUpgradeTarget(plan)}
                                   className="w-full border border-gray-300 hover:bg-gray-50 text-gray-700 rounded-xl py-2.5 text-sm font-medium transition flex items-center justify-center gap-2"
                                 >
-                                  <TrendingDown className="w-4 h-4" /> Cambiar a este plan
+                                  Cambiar a este plan
                                 </button>
                               ) : null}
                             </div>
                           )}
 
-                          {esPlanActual && (
-                            <div className="mt-5">
-                              <div className="w-full bg-green-50 text-green-700 rounded-xl py-2.5 text-sm font-medium text-center border border-green-200">
-                                Plan activo
-                              </div>
-                            </div>
-                          )}
-
-                          {!esOwner && !esPlanActual && (
+                          {!esOwner && (
                             <p className="mt-4 text-xs text-gray-400 text-center">Solo el propietario puede cambiar el plan</p>
                           )}
                         </div>
@@ -251,12 +253,6 @@ export default function PlanPage() {
         />
       )}
 
-      {downgradeTarget && (
-        <DowngradePlanModal
-          plan={downgradeTarget}
-          onClose={() => setDowngradeTarget(null)}
-        />
-      )}
     </div>
   );
 }

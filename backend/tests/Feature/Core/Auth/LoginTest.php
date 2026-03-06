@@ -131,6 +131,6 @@ class LoginTest extends TestCase
 
         $response->assertOk()
             ->assertJsonPath('data.user.suscripcion.estado', 'cancelada')
-            ->assertJsonPath('data.user.suscripcion.redirect', '/reactivar');
+            ->assertJsonPath('data.user.suscripcion.redirect', '/configuracion/plan');
     }
 }

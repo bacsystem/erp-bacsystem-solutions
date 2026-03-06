@@ -75,7 +75,7 @@ class LoginService
 
         if ($s->esCancelada()) {
             $suscripcionData['fecha_cancelacion'] = $s->fecha_cancelacion?->toDateString();
-            $suscripcionData['redirect']          = '/reactivar';
+            $suscripcionData['redirect']          = '/configuracion/plan';
         } else {
             $suscripcionData['fecha_vencimiento'] = $s->fecha_vencimiento->toDateString();
         }

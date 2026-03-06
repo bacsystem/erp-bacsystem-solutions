@@ -16,8 +16,13 @@ export function UpgradePlanModal({ plan, suscripcion, onClose }: UpgradePlanModa
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
 
-  const diasRestantes = suscripcion.dias_restantes;
-  const montoProrrateo = Math.max(0, (plan.precio_mensual / 30) * diasRestantes);
+  const diasRestantes   = Number(suscripcion.dias_restantes) || 0;
+  const precioActual    = Number(suscripcion.plan?.precio_mensual) || 0;
+  const precioNuevo     = Number(plan.precio_mensual) || 0;
+  const esRenovacion    = diasRestantes === 0 || precioNuevo <= precioActual;
+  const montoProrrateo  = esRenovacion
+    ? precioNuevo
+    : ((precioNuevo - precioActual) / 30) * diasRestantes;
 
   if (success) {
     return (
@@ -88,6 +93,7 @@ export function UpgradePlanModal({ plan, suscripcion, onClose }: UpgradePlanModa
           <CulqiCheckoutForm
             planId={plan.id}
             montoProrrateo={montoProrrateo}
+            esRenovacion={esRenovacion}
             onSuccess={() => setSuccess(true)}
             onError={setError}
           />

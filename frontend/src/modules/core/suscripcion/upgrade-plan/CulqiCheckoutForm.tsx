@@ -23,11 +23,16 @@ declare global {
 interface CulqiCheckoutFormProps {
   readonly planId: string;
   readonly montoProrrateo: number;
+  readonly esRenovacion?: boolean;
   readonly onSuccess: () => void;
   readonly onError: (msg: string) => void;
 }
 
-export function CulqiCheckoutForm({ planId, montoProrrateo, onSuccess, onError }: CulqiCheckoutFormProps) {
+function getApiMsg(e: unknown) {
+  return (e as { response?: { data?: { message?: string } } })?.response?.data?.message ?? 'Error en el pago';
+}
+
+export function CulqiCheckoutForm({ planId, montoProrrateo, esRenovacion = false, onSuccess, onError }: CulqiCheckoutFormProps) {
   const { mutate: upgrade, isPending } = useUpgradePlan();
   const [loaded, setLoaded] = useState(false);
 
@@ -40,58 +45,55 @@ export function CulqiCheckoutForm({ planId, montoProrrateo, onSuccess, onError }
     return () => { script.remove(); };
   }, []);
 
-  const culqi = globalThis as unknown as Window;
-
   const handlePay = () => {
-    if (!culqi.Culqi) {
-      onError('Culqi no está disponible. Recarga la página.');
-      return;
-    }
+    const culqi = globalThis as unknown as Window;
+    if (!culqi.Culqi) { onError('Culqi no está disponible. Recarga la página.'); return; }
 
-    culqi.Culqi.publicKey = process.env.NEXT_PUBLIC_CULQI_PUBLIC_KEY ?? '';
+    const publicKey = process.env.NEXT_PUBLIC_CULQI_PUBLIC_KEY ?? '';
+    if (!publicKey) { onError('Clave pública de Culqi no configurada.'); return; }
+
+    culqi.Culqi.publicKey = publicKey;
     culqi.Culqi.settings({
       title: 'OperaAI',
       currency: 'PEN',
-      description: 'Upgrade de plan',
-      amount: Math.round(montoProrrateo * 100),
+      description: esRenovacion ? 'Renovación de plan' : 'Upgrade de plan',
+      amount: Math.round(Number(montoProrrateo) * 100),
     });
 
     const instance = culqi.Culqi;
     culqi.culqi = () => {
       if (instance?.token) {
-        upgrade(
-          { plan_id: planId, culqi_token: instance.token.id },
-          { onSuccess, onError: (e: unknown) => onError((e as { response?: { data?: { message?: string } } })?.response?.data?.message ?? 'Error en el pago') }
-        );
+        upgrade({ plan_id: planId, culqi_token: instance.token.id }, { onSuccess, onError: (e) => onError(getApiMsg(e)) });
       } else if (instance?.error) {
         onError(instance.error.user_message ?? 'Error en el pago');
       }
     };
-
     culqi.Culqi.open();
   };
 
   return (
     <div className="space-y-4">
+      {/* Monto */}
       <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
-        <div className="flex items-center gap-2 text-blue-600 text-xs font-medium mb-2">
-          <CreditCard className="w-3.5 h-3.5" />
-          Monto a pagar hoy (prorrateo)
-        </div>
-        <p className="text-3xl font-extrabold text-blue-700">S/. {montoProrrateo.toFixed(2)}</p>
-        <p className="text-xs text-gray-500 mt-1">Calculado por los días restantes de tu período actual.</p>
+        <p className="text-xs text-blue-600 font-medium mb-1">
+          {esRenovacion ? 'Monto a pagar (renovación mensual)' : 'Monto a pagar hoy (prorrateo)'}
+        </p>
+        <p className="text-3xl font-extrabold text-blue-700">S/. {Number(montoProrrateo).toFixed(2)}</p>
+        <p className="text-xs text-gray-500 mt-1">
+          {esRenovacion
+            ? 'Precio mensual del plan. Se renovará por 30 días.'
+            : 'Diferencia proporcional por los días restantes de tu período actual.'}
+        </p>
       </div>
+
       <button
-        type="button"
         onClick={handlePay}
         disabled={!loaded || isPending}
-        className="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-xl py-2.5 text-sm font-medium transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+        className="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-xl py-2.5 text-sm font-medium transition disabled:opacity-50 flex items-center justify-center gap-2"
       >
-        {isPending ? (
-          <><Loader2 className="w-4 h-4 animate-spin" /> Procesando...</>
-        ) : (
-          <><CreditCard className="w-4 h-4" /> Pagar con tarjeta</>
-        )}
+        {isPending
+          ? <><Loader2 className="w-4 h-4 animate-spin" /> Procesando...</>
+          : <><CreditCard className="w-4 h-4" /> Pagar</>}
       </button>
     </div>
   );

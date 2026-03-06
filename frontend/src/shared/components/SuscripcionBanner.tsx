@@ -18,15 +18,15 @@ export function SuscripcionBanner() {
       {estado === 'cancelada' ? (
         <>
           <span>Tu suscripción ha sido cancelada. Reactiva tu cuenta para continuar.</span>
-          <Link href="/reactivar" className="ml-4 underline font-medium">
+          <Link href="/configuracion/plan" className="ml-4 underline font-medium">
             Reactivar ahora
           </Link>
         </>
       ) : (
         <>
-          <span>Tu período de prueba ha vencido. Activa un plan para continuar.</span>
+          <span>Tu suscripción ha vencido. Renueva tu plan para continuar.</span>
           <Link href="/configuracion/plan" className="ml-4 underline font-medium">
-            Ver planes
+            Renovar ahora
           </Link>
         </>
       )}
