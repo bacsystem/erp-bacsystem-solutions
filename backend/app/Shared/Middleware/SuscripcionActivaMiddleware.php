@@ -24,11 +24,9 @@ class SuscripcionActivaMiddleware
         $suscripcion = auth()->user()->empresa->suscripcionActiva;
 
         if ($suscripcion?->esCancelada()) {
-            $key      = $request->method() . ':' . $request->path();
-            $isExcluida = in_array($key, self::RUTAS_PERMITIDAS_VENCIDA)
-                || in_array($request->method(), ['GET', 'HEAD']);
+            $key = $request->method() . ':' . $request->path();
 
-            if (! $isExcluida) {
+            if (! in_array($key, self::RUTAS_PERMITIDAS_VENCIDA)) {
                 return ApiResponse::error(
                     'Tu suscripción está cancelada.',
                     ['redirect' => '/configuracion/plan'],
