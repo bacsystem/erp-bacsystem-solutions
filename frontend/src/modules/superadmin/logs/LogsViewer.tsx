@@ -4,6 +4,15 @@ import { useState } from 'react'
 import { useLogs, exportLogs, type LogFilters } from './use-logs'
 import LogsFilters from './LogsFilters'
 
+interface AuditLog {
+  id: string;
+  empresa: string | null;
+  usuario: string | null;
+  accion: string;
+  ip: string;
+  created_at: string;
+}
+
 export default function LogsViewer() {
   const [filters, setFilters] = useState<LogFilters>({ page: 1 })
   const [exporting, setExporting] = useState(false)
@@ -41,16 +50,17 @@ export default function LogsViewer() {
             </tr>
           </thead>
           <tbody>
-            {isLoading ? (
+            {isLoading && (
               <tr>
                 <td colSpan={5} className="px-4 py-8 text-center text-gray-400">Cargando logs...</td>
               </tr>
-            ) : logs.length === 0 ? (
+            )}
+            {!isLoading && logs.length === 0 && (
               <tr>
                 <td colSpan={5} className="px-4 py-8 text-center text-gray-500">No hay logs para mostrar</td>
               </tr>
-            ) : (
-              logs.map((log: any) => (
+            )}
+            {!isLoading && logs.length > 0 && logs.map((log: AuditLog) => (
                 <tr key={log.id} className="border-b border-gray-700/50 hover:bg-gray-700/20">
                   <td className="px-4 py-2.5 text-gray-300 text-xs">{log.empresa ?? '—'}</td>
                   <td className="px-4 py-2.5 text-gray-300 text-xs">{log.usuario ?? '—'}</td>
@@ -61,7 +71,7 @@ export default function LogsViewer() {
                   </td>
                 </tr>
               ))
-            )}
+            }
           </tbody>
         </table>
       </div>

@@ -4,9 +4,18 @@ import { useEffect, useState } from 'react';
 import { CreditCard, Loader2 } from 'lucide-react';
 import { useUpgradePlan } from './use-upgrade-plan';
 
+interface CulqiInstance {
+  publicKey: string;
+  settings: (opts: Record<string, unknown>) => void;
+  open: () => void;
+  close: () => void;
+  token?: { id: string };
+  error?: { user_message?: string };
+}
+
 declare global {
   interface Window {
-    Culqi?: any;
+    Culqi?: CulqiInstance;
     culqi?: () => void;
   }
 }
@@ -47,14 +56,15 @@ export function CulqiCheckoutForm({ planId, montoProrrateo, onSuccess, onError }
       amount: Math.round(montoProrrateo * 100),
     });
 
+    const instance = culqi.Culqi;
     culqi.culqi = () => {
-      if (culqi.Culqi.token) {
+      if (instance?.token) {
         upgrade(
-          { plan_id: planId, culqi_token: culqi.Culqi.token.id },
+          { plan_id: planId, culqi_token: instance.token.id },
           { onSuccess, onError: (e: unknown) => onError((e as { response?: { data?: { message?: string } } })?.response?.data?.message ?? 'Error en el pago') }
         );
-      } else if (culqi.Culqi.error) {
-        onError(culqi.Culqi.error.user_message ?? 'Error en el pago');
+      } else if (instance?.error) {
+        onError(instance.error.user_message ?? 'Error en el pago');
       }
     };
 

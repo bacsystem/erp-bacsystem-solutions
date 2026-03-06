@@ -4,8 +4,10 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import Link from 'next/link';
+import type { AxiosError } from 'axios';
 import { loginSchema, type LoginFormData } from './login.schema';
 import { useLogin } from './use-login';
+import type { ApiError } from '@/shared/types';
 
 export function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
@@ -17,13 +19,14 @@ export function LoginForm() {
     formState: { errors },
   } = useForm<LoginFormData>({ resolver: zodResolver(loginSchema) });
 
-  const apiError = (error as any)?.response?.data?.message;
+  const apiError = (error as AxiosError<ApiError>)?.response?.data?.message;
 
   return (
     <form onSubmit={handleSubmit((data) => login(data))} className="space-y-4">
       <div>
-        <label className="block text-sm font-medium mb-1">Email</label>
+        <label htmlFor="login-email" className="block text-sm font-medium mb-1">Email</label>
         <input
+          id="login-email"
           {...register('email')}
           type="email"
           autoComplete="email"
@@ -34,9 +37,10 @@ export function LoginForm() {
       </div>
 
       <div>
-        <label className="block text-sm font-medium mb-1">Contraseña</label>
+        <label htmlFor="login-password" className="block text-sm font-medium mb-1">Contraseña</label>
         <div className="relative">
           <input
+            id="login-password"
             {...register('password')}
             type={showPassword ? 'text' : 'password'}
             autoComplete="current-password"
