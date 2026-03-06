@@ -21,10 +21,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up PHP 8.3
+      - name: Set up PHP 8.4
         uses: shivammathur/setup-php@v2
         with:
-          php-version: "8.3"
+          php-version: "8.4"
           extensions: pdo, pdo_sqlite, sqlite3, mbstring, xml, curl, zip
           coverage: none
 
@@ -36,7 +36,7 @@ jobs:
           restore-keys: composer-
 
       - name: Install dependencies
-        run: composer install --no-interaction --prefer-dist --optimize-autoloader --ignore-platform-reqs
+        run: composer install --no-interaction --prefer-dist --optimize-autoloader
 
       - name: Copy .env for testing
         run: cp .env.example .env || cp .env .env.bak
