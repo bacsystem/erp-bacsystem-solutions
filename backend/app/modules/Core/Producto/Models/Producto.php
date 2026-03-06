@@ -28,6 +28,12 @@ class Producto extends BaseModel
         'activo',
     ];
 
+    protected $attributes = [
+        'activo'   => true,
+        'tipo'     => 'simple',
+        'igv_tipo' => 'gravado',
+    ];
+
     protected $casts = [
         'activo'        => 'boolean',
         'precio_compra' => 'float',

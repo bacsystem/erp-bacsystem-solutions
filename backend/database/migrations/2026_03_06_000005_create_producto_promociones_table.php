@@ -10,7 +10,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('producto_promociones', function (Blueprint $table) {
-            $table->uuid('id')->primary()->default(DB::raw('gen_random_uuid()'));
+            $table->uuid('id')->primary();
             $table->uuid('producto_id');
             $table->string('nombre', 120);
             $table->enum('tipo', ['porcentaje', 'monto_fijo']);
@@ -25,7 +25,9 @@ return new class extends Migration
             $table->index(['producto_id', 'fecha_inicio', 'fecha_fin'], 'idx_promociones_vigencia');
         });
 
-        DB::statement('ALTER TABLE producto_promociones ADD CONSTRAINT chk_promo_valor CHECK (valor > 0)');
+        if (DB::getDriverName() === 'pgsql') {
+            DB::statement('ALTER TABLE producto_promociones ADD CONSTRAINT chk_promo_valor CHECK (valor > 0)');
+        }
     }
 
     public function down(): void

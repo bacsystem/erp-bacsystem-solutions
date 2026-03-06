@@ -29,6 +29,7 @@ use App\Modules\Core\Producto\Listar\ListarProductosController;
 use App\Modules\Core\Producto\GetDetalle\GetProductoDetalleController;
 use App\Modules\Core\Producto\Actualizar\ActualizarProductoController;
 use App\Modules\Core\Producto\Desactivar\DesactivarProductoController;
+use App\Modules\Core\Producto\Activar\ActivarProductoController;
 use App\Modules\Core\Producto\SubirImagen\SubirImagenController;
 use App\Modules\Core\Producto\EliminarImagen\EliminarImagenController;
 use App\Modules\Core\Producto\ImportarCSV\ImportarProductosController;
@@ -118,6 +119,8 @@ Route::middleware(['auth:sanctum', 'tenant'])->group(function () {
         Route::put('productos/{producto}', ActualizarProductoController::class)
             ->middleware('suscripcion.activa');
         Route::delete('productos/{producto}', DesactivarProductoController::class)
+            ->middleware('suscripcion.activa');
+        Route::patch('productos/{producto}/activar', ActivarProductoController::class)
             ->middleware('suscripcion.activa');
         Route::post('productos/{producto}/imagenes', SubirImagenController::class);
         Route::delete('productos/{producto}/imagenes/{imagen}', EliminarImagenController::class);
