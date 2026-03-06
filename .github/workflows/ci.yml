@@ -39,13 +39,13 @@ jobs:
         run: composer install --no-interaction --prefer-dist --optimize-autoloader
 
       - name: Copy .env for testing
-        run: cp .env.example .env || cp .env .env.bak
+        run: cp .env.example .env
 
       - name: Generate app key
-        run: php artisan key:generate --env=testing
+        run: php artisan key:generate --force
 
       - name: Run tests (SQLite in-memory)
-        run: php artisan test --env=testing
+        run: php artisan test
 
   # ─────────────────────────────────────────────
   # Frontend – Next.js (Node 20)
